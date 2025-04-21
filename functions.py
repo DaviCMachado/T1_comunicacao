@@ -111,7 +111,6 @@ def b8zs(bits):
 
     return tempo, sinal
 
-
 def four_b5b(bits):
     tabela = {
         '0000':'11110',
@@ -143,12 +142,32 @@ def four_b5b(bits):
     # segundo wikpedia: ( https://en-m-wikipedia-org.translate.goog/wiki/4B5B?_x_tr_sl=en&_x_tr_tl=pt&_x_tr_hl=pt&_x_tr_pto=tc)
     # On optical fiber, the 4B5B output is NRZI-encoded. 
     # FDDI over copper (CDDI) uses MLT-3 encoding instead, as does 100BASE-TX Fast Ethernet.
-    return nrzi(bits)
-        
-
+    return nrzi(bits)        
 
 def mlt3(bits):
-    pass
+    nivel = 0
+    t = 1
+    ultimoNivelNaoNulo = 1 #primeiro '1' faz tensão ir p baixo
+    for bit in bits:
+        if bit == '1':
+            if len(sinal)==0 or sinal[-1] == 0:
+                ultimoNivelNaoNulo *=-1
+                nivel = ultimoNivelNaoNulo
+            elif sinal[-1] == 1 or sinal[-1] == -1:
+                nivel = 0 
+
+        elif bit == '0': #faz nada, mantém valores.
+            pass
+
+        print(nivel)
+        input()
+        tempo += [t, t+1]
+        sinal += [nivel]*2
+
+        t += 1
+        
+    return tempo, sinal
+
 
 # Lista e mapeamento
 codificacoes = [
