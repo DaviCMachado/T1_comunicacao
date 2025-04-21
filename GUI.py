@@ -18,7 +18,7 @@ from kivy.uix.anchorlayout import AnchorLayout
 
 import matplotlib.pyplot as plt
 import os
-import functions  # importa seu arquivo com as codificações
+import functions
 
 
 def plotar(tempo, sinal, titulo=""):
@@ -135,7 +135,7 @@ class TelaEntradaBits(Screen):
         bits = self.entrada.text.strip()
         if not all(b in '01' for b in bits):
             popup = Popup(title="Erro", content=Label(text="Digite apenas 0 e 1."),
-                          size_hint=(0.6, 0.3))
+                          size_hint=(0.6, 0.9))
             popup.open()
             return
 
