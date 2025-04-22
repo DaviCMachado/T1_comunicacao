@@ -94,7 +94,6 @@ def b8zs(bits):
                 tempo = tempo[:-7*4]  # 7 bits * 4 tempos por bit
                 sinal = sinal[:-7*4]
 
-                # Para simplificar, vamos fazer a substituição manualmente
                 seq = [0, 0, 0, nivel, -nivel, 0, -nivel, nivel]
                 for bit_b8zs in seq:
                     tempo += [t, t + 0.5, t + 0.5, t + 1]
@@ -147,6 +146,7 @@ def four_b5b(bits):
 def mlt3(bits):
     nivel = 0
     t = 1
+    tempo, sinal = [], []
     ultimoNivelNaoNulo = 1 #primeiro '1' faz tensão ir p baixo
     for bit in bits:
         if bit == '1':
@@ -159,8 +159,6 @@ def mlt3(bits):
         elif bit == '0': #faz nada, mantém valores.
             pass
 
-        print(nivel)
-        input()
         tempo += [t, t+1]
         sinal += [nivel]*2
 
