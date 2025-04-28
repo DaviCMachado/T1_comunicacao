@@ -8,30 +8,26 @@ def decodificar_nrzl(sinal):    # FUNCIONA
     return ''.join(bits)
 
 
-def decodificar_nrzi(sinal):   # FUNCIONA
+def decodificar_nrzi(sinal):
     bits = []
     sinal = [x for x in sinal if x != '0']
     anterior = sinal[0]
 
     if anterior == '-1':
-        bits.append('0')
         atual = '0'
-        inverso = '1'
     elif anterior == '1':
-        bits.append('1')
         atual = '1'
-        inverso = '0'
+    
+    bits.append(atual)
 
     for nivel in sinal[1:]:
         if nivel == anterior:
-            bits.append(atual)
+            bits.append('0')
         else:
-            bits.append(inverso)
-            temp = atual
-            atual = inverso
-            inverso = temp
+            bits.append('1')
         anterior = nivel
     return ''.join(bits)
+
 
 def decodificar_ami(sinal):    # FUNCIONA
     bits = []
@@ -46,9 +42,9 @@ def decodificar_pseudoternario(sinal):    # PARECE QUE FUNCIONA
     bits = []
     for nivel in sinal:
         if nivel == '0':
-            bits.append('1')  # 0 indica "1"
+            bits.append('0')  # 0 indica "1"
         elif nivel == '1' or nivel == '-1':
-            bits.append('0')  # 1 ou -1 indicam "0"
+            bits.append('1')  # 1 ou -1 indicam "0"
     return ''.join(bits)
 
 
