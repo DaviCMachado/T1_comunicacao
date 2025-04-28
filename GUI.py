@@ -51,6 +51,14 @@ class TelaMenuInicial(Screen):
         btn_sobre.bind(on_press=self.abrir_popup_sobre)
         layout.add_widget(btn_sobre)
 
+        copyright_label = Label(
+            text="Ohana LTDA © 2025 - Todos os direitos reservados.",
+            size_hint=(1, 0.05),
+            pos_hint={"center_x": 0.5, "y": 0.05}
+        )
+        layout.add_widget(copyright_label)
+
+
         self.add_widget(layout)
 
     def ir_para_codificacao(self, *args):
@@ -61,12 +69,16 @@ class TelaMenuInicial(Screen):
 
 
     def abrir_popup_sobre(self, *args):
-        texto = (
+        texto1 = (
             "Este trabalho implementa esquemas de codificação de linha como NRZ-L, NRZ-I, AMI, "
             "Pseudoternário, Manchester e Manchester Diferencial. São técnicas utilizadas em comunicação digital "
             "para transformar bits em sinais físicos transmitíveis.\n\n"
             "Esses métodos ajudam a garantir sincronização entre transmissor e receptor, reduzir o consumo de energia, "
             "e permitir a detecção de erros. Cada técnica possui características distintas e é adequada para diferentes cenários."
+        )
+
+        texto2 = (
+            "Feito com amor por:\n\nCarlos Eduardo Velozo\nDavi de Castro Machado\nLucas Xavier Pairé\nMiguel Brondani"
         )
 
         # Layout principal com padding
@@ -78,21 +90,32 @@ class TelaMenuInicial(Screen):
         fechar_layout.add_widget(btn_fechar)
         content.add_widget(fechar_layout)
 
-        # Scroll com texto
+        # Scroll com o texto principal (texto1)
         scroll = ScrollView(size_hint=(1, 1))
         label = Label(
-            text=texto,
+            text=texto1,
             size_hint_y=None,
             halign='left',
             valign='top',
             font_size='16sp',
-            text_size=(660, None),  
-            padding=(20, 10)        # padding nas laterais e topo/baixo
+            text_size=(660, None),
+            padding=(20, 10)  # Padding nas laterais e topo/baixo
         )
         label.bind(texture_size=lambda instance, value: setattr(label, 'height', value[1]))
         scroll.add_widget(label)
-
         content.add_widget(scroll)
+
+        # Adicionando o texto2 (centralizado horizontalmente)
+        label2 = Label(
+            text=texto2,
+            size_hint_y=0.8,
+            halign='center',  # Centraliza horizontalmente
+            valign='middle',  # Centraliza verticalmente dentro do espaço
+            font_size='16sp',
+            text_size=(660, None),
+            padding=(20, 10)
+        )
+        content.add_widget(label2)
 
         # Popup
         popup = Popup(title="Sobre os Códigos de Linha",
@@ -184,7 +207,7 @@ class TelaCodificacao(Screen):
         funcao = encode.funcoes_codificacao[nome_codificacao]
 
         tempo, sinal = funcao(bits)
-        plotar(tempo, sinal, titulo=f"{nome_codificacao} para bits: {bits}")
+        plotar(tempo, sinal, titulo=f"{nome_codificacao} para bits: {bits}   Sinais de saída: {sinal}")
 
         if os.path.exists("grafico.png"):
             self.imagem.source = "grafico.png"
@@ -319,6 +342,7 @@ class TelaDecodificacao(Screen):
 
 class LineCodeApp(App):
     def build(self):
+        self.title = "LineCode - Alpha 1.0"
         sm = ScreenManager()
         sm.add_widget(TelaMenuInicial(name="menu_inicial"))
         sm.add_widget(TelaCodificacao(name="codificar_bits"))

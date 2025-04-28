@@ -1,3 +1,5 @@
+import tabelas
+
 def decodificar_nrzl(sinal):    # FUNCIONA
     bits = []
     for nivel in sinal:
@@ -100,15 +102,56 @@ def decodificar_mlt3(sinal):             # TESTAR MAIS
         anterior = nivel
     return ''.join(bits)
 
-# A 8B6T continua não implementada
-def decodificar_8b6t(sinal):
-    return "000"
 
+def decodificar_8b6t(sinal):
+    mapeamento_inverso = tabelas.mapeamento8b6t_inverso()
+
+    if len(sinal) % 6 != 0:
+        raise ValueError("Sequência de sinais deve ter tamanho múltiplo de 6.")
+
+    bits = ""
+
+    for i in range(0, len(sinal), 6):
+        bloco_raw = sinal[i:i+6]
+        bloco = tuple(int(x) for x in bloco_raw)  # Garante que é tupla de int
+
+        if bloco not in mapeamento_inverso:
+            raise ValueError(f"Bloco de sinais inválido: {bloco}")
+        
+        byte = mapeamento_inverso[bloco]
+        
+        # Converte o byte para string de 8 bits
+        bits += format(byte, "08b")
+
+    return bits
+
+
+
+def four_dpam5(bits): #four dimensional, five-level pulse amplitude modulation !!confirmar tensão dos valores
+    """Codifica bits em sinais PAM5 com tempo e sinal, estilo NRZL."""
+    tempo, sinal = [], []
+    if len(bits) %8!=0:
+        return tempo, sinal
+    
+    mapaSinais= tabelas.decode_map_4dpam5()
+    
+    t=0
+    for bit1, bit2 in zip(bits[::2], bits[1::2]):
+        tempo+=[t, t+1]
+        sinal+=[mapaSinais[bit1+bit2]]*2
+        t+=1
+
+    return tempo, sinal
+
+
+def decodificar_four_dpam5(sinal):
+    return "Não implementado."
 
 # Lista e mapeamento
 decodificacoes = [
     "NRZ-L", "NRZ-I", "AMI", "Pseudoternário",
-    "Manchester", "Manchester Diferencial", "MLT-3", "8B/6T"
+    "Manchester", "Manchester Diferencial", "MLT-3", 
+    "8B/6T", "4D-PAM5"
 ]
 
 funcoes_decodificacao = {
@@ -119,5 +162,6 @@ funcoes_decodificacao = {
     "Manchester": decodificar_manchester,
     "Manchester Diferencial": decodificar_manchester_diferencial,
     "MLT-3": decodificar_mlt3,
-    "8B/6T": decodificar_8b6t
+    "8B/6T": decodificar_8b6t,
+    "4D-PAM5": decodificar_four_dpam5
 }

@@ -67,6 +67,13 @@ def mapeamento8b6t():
         0xFC: [+1,0,0,-1,0,+1], 0xFD: [0,0,+1,+1,-1,0], 0xFE: [0,0,+1,0,+1,-1], 0xFF: [0,0,+1,-1,0,+1]
 }
 
+def mapeamento8b6t_inverso():
+    direto = mapeamento8b6t()
+    inverso = {}
+    for byte, sequencia in direto.items():
+        inverso[tuple(sequencia)] = byte
+    return inverso
+
 def mapeamento4dpam5():
     return {
         "00":-0.5,
@@ -74,3 +81,10 @@ def mapeamento4dpam5():
         "10":0.5,
         "11":1.5
     }
+
+
+def decode_map_4dpam5():
+    mapa = mapeamento4dpam5()
+    # cria o dicionário inverso (valor ➔ bits)
+    mapa_inverso = {valor: bits for bits, valor in mapa.items()}
+    return mapa_inverso
