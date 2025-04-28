@@ -18,7 +18,8 @@ from kivy.uix.anchorlayout import AnchorLayout
 
 import matplotlib.pyplot as plt
 import os
-import functions
+import encode
+import decode
 
 
 def plotar(tempo, sinal, titulo=""):
@@ -37,18 +38,26 @@ class TelaMenuInicial(Screen):
         super().__init__(**kwargs)
         layout = FloatLayout()
 
-        btn_gerar = Button(text="Gerar Gráficos", size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "center_y": 0.6})
-        btn_gerar.bind(on_press=self.ir_para_entrada)
+        btn_gerar = Button(text="Codificar", size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "center_y": 0.75})
+        btn_gerar.bind(on_press=self.ir_para_codificacao)
         layout.add_widget(btn_gerar)
 
-        btn_sobre = Button(text="Sobre os Códigos de Linha", size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "center_y": 0.3})
+        btn_gerar = Button(text="Decodificar", size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "center_y": 0.5})
+        btn_gerar.bind(on_press=self.ir_para_decodificacao)
+        layout.add_widget(btn_gerar)
+
+
+        btn_sobre = Button(text="Sobre os Códigos de Linha", size_hint=(0.4, 0.2), pos_hint={"center_x": 0.5, "center_y": 0.25})
         btn_sobre.bind(on_press=self.abrir_popup_sobre)
         layout.add_widget(btn_sobre)
 
         self.add_widget(layout)
 
-    def ir_para_entrada(self, *args):
-        self.manager.current = "entrada_bits"
+    def ir_para_codificacao(self, *args):
+        self.manager.current = "codificar_bits"
+
+    def ir_para_decodificacao(self, *args):
+        self.manager.current = "decodificar_bits"
 
 
     def abrir_popup_sobre(self, *args):
@@ -96,7 +105,7 @@ class TelaMenuInicial(Screen):
         popup.open()
 
 
-class TelaEntradaBits(Screen):
+class TelaCodificacao(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.indice_codificacao = 0
@@ -106,8 +115,8 @@ class TelaEntradaBits(Screen):
                                  size_hint=(0.8, 0.15), pos_hint={"center_x": 0.5, "center_y": 0.7})
         self.layout.add_widget(self.entrada)
 
-        self.label_codificacao = Label(text=functions.codificacoes[self.indice_codificacao],
-                                       size_hint=(0.8, 0.1), pos_hint={"center_x": 0.5, "center_y": 0.4}) #AHAHA
+        self.label_codificacao = Label(text=encode.codificacoes[self.indice_codificacao],
+                                       size_hint=(0.8, 0.1), pos_hint={"center_x": 0.5, "center_y": 0.4}) 
         self.layout.add_widget(self.label_codificacao)
 
         btn_ok = Button(text="OK", size_hint=(0.2, 0.15), pos_hint={"center_x": 0.5, "center_y": 0.5})
@@ -126,21 +135,53 @@ class TelaEntradaBits(Screen):
         btn_voltar.bind(on_press=self.voltar)
         self.layout.add_widget(btn_voltar)
 
+        btn_voltar = Button(text="Decodificação", size_hint=(0.2, 0.1), pos_hint={"x": 0.75, "top": 0.98})
+        btn_voltar.bind(on_press=self.ir_para_decodificacao)
+        self.layout.add_widget(btn_voltar)
+
         self.imagem = Image(size_hint=(0.9, 0.35), pos_hint={"center_x": 0.5, "y": 0.02})
         self.layout.add_widget(self.imagem)
 
         self.add_widget(self.layout)
 
+    def ir_para_decodificacao(self, *args):
+        self.manager.current = "decodificar_bits"
+
     def gerar_grafico(self, *args):
         bits = self.entrada.text.strip()
         if not all(b in '01' for b in bits):
-            popup = Popup(title="Erro", content=Label(text="Digite apenas 0 e 1."),
-                          size_hint=(0.6, 0.9))
+            
+            content = FloatLayout()
+
+            lbl = Label(
+                text="Digite apenas 0 e 1.",
+                size_hint=(1, 0.8),
+                pos_hint={"x": 0, "y": 0.1}
+            )
+            content.add_widget(lbl)
+
+            btn_fechar = Button(
+                text="X",
+                size_hint=(None, None),
+                size=(35, 35),
+                pos_hint={"right": 1, "top": 1.22}
+            )
+            content.add_widget(btn_fechar)
+
+            popup = Popup(
+                title="Erro",
+                content=content,
+                size_hint=(0.6, 0.4),
+                auto_dismiss=False
+            )
+
+            btn_fechar.bind(on_release=popup.dismiss)
+
             popup.open()
             return
 
-        nome_codificacao = functions.codificacoes[self.indice_codificacao]
-        funcao = functions.funcoes_codificacao[nome_codificacao]
+        nome_codificacao = encode.codificacoes[self.indice_codificacao]
+        funcao = encode.funcoes_codificacao[nome_codificacao]
 
         tempo, sinal = funcao(bits)
         plotar(tempo, sinal, titulo=f"{nome_codificacao} para bits: {bits}")
@@ -150,15 +191,15 @@ class TelaEntradaBits(Screen):
             self.imagem.reload()
 
     def codificacao_anterior(self, *args):
-        self.indice_codificacao = (self.indice_codificacao - 1) % len(functions.codificacoes)
-        self.label_codificacao.text = functions.codificacoes[self.indice_codificacao]
+        self.indice_codificacao = (self.indice_codificacao - 1) % len(encode.codificacoes)
+        self.label_codificacao.text = encode.codificacoes[self.indice_codificacao]
         
         if self.entrada.text.strip():
             self.gerar_grafico()
 
     def codificacao_proxima(self, *args):
-        self.indice_codificacao = (self.indice_codificacao + 1) % len(functions.codificacoes)
-        self.label_codificacao.text = functions.codificacoes[self.indice_codificacao]
+        self.indice_codificacao = (self.indice_codificacao + 1) % len(encode.codificacoes)
+        self.label_codificacao.text = encode.codificacoes[self.indice_codificacao]
         
         if self.entrada.text.strip():
             self.gerar_grafico()
@@ -168,11 +209,120 @@ class TelaEntradaBits(Screen):
         self.manager.current = "menu_inicial"
 
 
+class TelaDecodificacao(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.indice_decodificacao = 0
+        self.layout = FloatLayout()
+
+        self.entrada = TextInput(hint_text="Digite a sequência de sinais (ex: -1 1 1 -1)", multiline=False,
+                                 size_hint=(0.8, 0.15), pos_hint={"center_x": 0.5, "center_y": 0.7})
+        self.layout.add_widget(self.entrada)
+
+        self.label_decodificacao = Label(
+            text=decode.decodificacoes[self.indice_decodificacao],
+            size_hint=(0.8, 0.1), pos_hint={"center_x": 0.5, "center_y": 0.3}
+        )
+        self.layout.add_widget(self.label_decodificacao)
+
+        btn_ok = Button(text="OK", size_hint=(0.2, 0.15), pos_hint={"center_x": 0.5, "center_y": 0.5})
+        btn_ok.bind(on_press=self.gerar_saida)
+        self.layout.add_widget(btn_ok)
+
+        btn_anterior = Button(text="Anterior", size_hint=(0.2, 0.15),
+                              pos_hint={"center_x": 0.25, "center_y": 0.5})
+        btn_anterior.bind(on_press=self.decodificacao_anterior)
+        self.layout.add_widget(btn_anterior)
+
+        btn_proximo = Button(text="Próximo", size_hint=(0.2, 0.15),
+                             pos_hint={"center_x": 0.75, "center_y": 0.5})
+        btn_proximo.bind(on_press=self.decodificacao_proxima)
+        self.layout.add_widget(btn_proximo)
+
+        btn_voltar = Button(text="Voltar", size_hint=(0.2, 0.1),
+                            pos_hint={"x": 0.02, "top": 0.98})
+        btn_voltar.bind(on_press=self.voltar)
+        self.layout.add_widget(btn_voltar)
+
+        btn_cod = Button(text="Codificação", size_hint=(0.2, 0.1),
+                         pos_hint={"x": 0.75, "top": 0.98})
+        btn_cod.bind(on_press=self.ir_para_codificacao)
+        self.layout.add_widget(btn_cod)
+
+        # Label de resultado ou erro
+        self.resultado_label = Label(
+            text="Resultado da Decodificação:",
+            size_hint=(0.8, 0.15), pos_hint={"center_x": 0.5, "center_y": 0.2}
+        )
+        self.layout.add_widget(self.resultado_label)
+
+        self.add_widget(self.layout)
+
+    def ir_para_codificacao(self, *args):
+        self.manager.current = "codificar_bits"
+
+    def gerar_saida(self, *args):
+        sinais_texto = self.entrada.text.strip()
+        sinais_list = sinais_texto.split()
+
+        # 1) validação de caracteres
+        if not all(b in ('-1', '0', '1') for b in sinais_list):
+            self.resultado_label.text = "Digite apenas -1, 0 ou 1."
+            return
+
+        nome = decode.decodificacoes[self.indice_decodificacao]
+        funcao = decode.funcoes_decodificacao[nome]
+
+        # 2) validação de múltiplos de amostras por bit
+        requisitos = {
+            "NRZ-L": 1,
+            "NRZ-I": 1,
+            "AMI": 1,
+            "Pseudoternário": 2,
+            "MLT-3": 2,
+            "Manchester": 4,
+            "Manchester Diferencial": 4,
+            "8B/6T": 6
+        }
+        req = requisitos.get(nome, 1)
+        if len(sinais_list) % req != 0:
+            self.resultado_label.text = f"O método {nome} precisa de múltiplos de {req} amostras."
+            return
+
+        # 3) chama a decodificação
+        try:
+            bits = funcao(sinais_list)
+        except Exception as e:
+            # Em caso de erro interno
+            self.resultado_label.text = f"Erro ao decodificar: {e}"
+            return
+
+        # 4) exibe o resultado
+        self.resultado_label.text = f"Resultado da Decodificação: {''.join(bits)}"
+
+    def decodificacao_anterior(self, *args):
+        self.indice_decodificacao = (self.indice_decodificacao - 1) % len(decode.decodificacoes)
+        self.label_decodificacao.text = decode.decodificacoes[self.indice_decodificacao]
+        if self.entrada.text.strip():
+            self.gerar_saida()
+
+    def decodificacao_proxima(self, *args):
+        self.indice_decodificacao = (self.indice_decodificacao + 1) % len(decode.decodificacoes)
+        self.label_decodificacao.text = decode.decodificacoes[self.indice_decodificacao]
+        if self.entrada.text.strip():
+            self.gerar_saida()
+
+    def voltar(self, *args):
+        self.manager.current = "menu_inicial"
+
+
+
 class LineCodeApp(App):
     def build(self):
         sm = ScreenManager()
         sm.add_widget(TelaMenuInicial(name="menu_inicial"))
-        sm.add_widget(TelaEntradaBits(name="entrada_bits"))
+        sm.add_widget(TelaCodificacao(name="codificar_bits"))
+        sm.add_widget(TelaDecodificacao(name="decodificar_bits"))
         return sm
 
 
